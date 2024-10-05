@@ -3,7 +3,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 
 // Inport Modules
-const { writeData, readData,  checkCollectionExists, updateEmail, createCollection, readDataByUsername ,readDataById } = require('./Module/Database');
+const { writeData, readData, updateUsername,updatePicUrl, removeDocument, updatePassword, updateEmail, createCollection, readDataByUsername ,readDataById } = require('./Module/Database');
 const e = require('express');
 const {generateOTP, sendEmail} = require('./Module/EmailSender');
 
@@ -26,6 +26,7 @@ const color = {
 async function StartServer(){
     const app = express();
     app.use(bodyParser.json());
+    console.log(color.green, "Server Status : Online");
 
 
 try {
@@ -42,19 +43,20 @@ try {
                 username: req.body.username,
                 password: req.body.password,
                 email: req.body.email,
+                picUrl: "https://i.ibb.co/Sd6SBMv/Test01.jpg"
             }
+            console.log(color.yellow, `Incoming request for signup : ${data.email}`);
             let result = await writeData('auth', "users", dataInsert);
             if (result == null) {
-                console.log(color.red, `Account creation failed`);
                 let response = {
                     "status": "error",
                     "code": false,
                     "message": "Account creation failed",
                 }
                 res.send(response);
+                console.log(color.red, `Account creation failed`);
             } else {
                let userData = await readDataById('auth', "users", result.insertedId);
-               console.log(JSON.stringify(userData));
                 let response = {
                     "status": "success",
                     "code": true,
@@ -70,13 +72,13 @@ try {
             console.log(color.yellow, `Incoming request for login : ${data.email}`);
             let result = await readData('auth', "users", data);
             if (result == null) {
-                console.log(color.red, `Invalid username or password`);
                 let response = {
                     "status": "error",
                     "code": false,
                     "message": "Invalid username or password",
                 }
                 res.send(response);
+                console.log(color.red, `Invalid username or password`);
             } else {
                 let response = {
                     "status": "success",
@@ -90,16 +92,16 @@ try {
         }
         // Check if account already exists
         if (type == 'check') {
-            console.log(color.yellow, `Incoming request for check : ${data.email}`);
+            console.log(color.yellow, `Incoming request for check account : ${data.email}`);
             let result = await readData('auth', "users", data);
             if (result == null) {
-                console.log(color.green, `Account does not exist`);
                 let response = {
                     "status": "success",
                     "code": true,
                     "message": "Account does not exist",
                 }
                 res.send(response);
+                console.log(color.green, `Account does not exist`);
             } else {
                 let response = {
                     "status": "error",
@@ -203,30 +205,117 @@ try {
     });
     // Update User
     app.post('/update', async (req, res) => {
-        let _id = req.query.authId;
-        let data = req.body;
-        let path = req.query.path;
-        if (path == 'email') {
-            console.log(color.yellow, `Incoming request for update email : ${_id}`);
-            let result = await updateEmail('auth', "users", _id, data.email);
-            console.log(JSON.stringify(result));
+        let updateId = req.query.authId;
+        let updateOption = req.query.option;
+        let updateData = req.body.data;
+        console.log(color.yellow, `Incoming request for update ${updateOption} : ${updateId}`);
+        if (updateOption == 'email') {
+            let result = await updateEmail('auth', "users", updateId, updateData);
             if (result == null) {
-                console.log(color.red, `Email not updated`);
+                console.log(color.red, `Email update failed`);
                 let response = {
                     "status": "error",
                     "code": false,
-                    "message": "Email not updated",
+                    "message": "Email update failed",
                 }
                 res.send(response);
-            } else {
+            }
+            else {
                 let response = {
                     "status": "success",
                     "code": true,
                     "message": "Email updated successfully",
                 }
                 res.send(response);
-                console.log(color.green, `Email updated successfully ID : ${_id}`);
+                console.log(color.green, `Email updated successfully ID : ${updateId}`);
             }
+        }
+        if (updateOption == 'username') {
+            let result = await updateUsername('auth', "users", updateId, updateData);
+            if (result == null) {
+                console.log(color.red, `Username update failed`);
+                let response = {
+                    "status": "error",
+                    "code": false,
+                    "message": "Username update failed",
+                }
+                res.send(response);
+            }
+            else {
+                let response = {
+                    "status": "success",
+                    "code": true,
+                    "message": "Username updated successfully",
+                }
+                res.send(response);
+                console.log(color.green, `Username updated successfully ID : ${updateId}`);
+            }   
+        }
+        if (updateOption == 'password') {
+            let result = await updatePassword('auth', "users", updateId, updateData);
+            if (result == null) {
+                console.log(color.red, `Password update failed`);
+                let response = {
+                    "status": "error",
+                    "code": false,
+                    "message": "Password update failed",
+                }
+                res.send(response);
+            }
+            else {
+                let response = {
+                    "status": "success",
+                    "code": true,
+                    "message": "Password updated successfully",
+                }
+                res.send(response);
+                console.log(color.green, `Password updated successfully ID : ${updateId}`);
+            }
+        } 
+        if (updateOption == 'picUrl') {
+            let result = await updatePicUrl('auth', "users", updateId, updateData);
+            if (result == null) {
+                console.log(color.red, `PicUrl update failed`);
+                let response = {
+                    "status": "error",
+                    "code": false,
+                    "message": "PicUrl update failed",
+                }
+                res.send(response);
+            }
+            else {
+                let response = {
+                    "status": "success",
+                    "code": true,
+                    "message": "PicUrl updated successfully",
+                }
+                res.send(response);
+                console.log(color.green, `PicUrl updated successfully ID : ${updateId}`);
+            }
+        }  
+    });
+    // Delete User
+    app.post('/delete', async (req, res) => {
+        let deleteId = req.query.authId;
+        console.log(color.yellow, `Incoming request for delete : ${deleteId}`);
+        let result = await removeDocument('auth', "users", deleteId);
+        if (result == null) {
+            console.log(color.red, `Delete failed`);
+            let response = {
+                "status": "error",
+                "code": false,
+                "message": "Delete failed",
+            }
+            res.send(response);
+        }
+        else {
+            let response = {
+                "status": "success",
+                "code": true,
+                "message": "Delete success",
+            }
+            res.send(response);
+            console.log(color.green, `Delete success ID : ${deleteId}`);
         }
     });
     // Send OTP
