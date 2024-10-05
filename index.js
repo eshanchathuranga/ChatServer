@@ -1,6 +1,7 @@
 // Import the package
 const express = require('express');
 const bodyParser = require('body-parser');
+const path = require('path');
 
 // Inport Modules
 const { writeData, readData, updateUsername,updatePicUrl, removeDocument, updatePassword, updateEmail, createCollection, readDataByUsername ,readDataById } = require('./Module/Database');
@@ -354,7 +355,15 @@ try {
     console.log(error);
 }
 
-    app.listen(3000, () => {
+if (process.env.NODE_ENV === "production") {
+    app.use(express.static(path.join(__dirname, "client", "build")));
+    app.get("*", (req, res) => {
+        res.sendFile(path.join(__dirname, "client", "build", "index.html"));
+    });
+}
+
+ const port = process.env.PORT || 3000;
+    app.listen(port, () => {
         console.log(color.green, 'Server started on port 3000');
     });
 }

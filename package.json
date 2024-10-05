@@ -4,7 +4,10 @@
   "description": "Sky_Chat Server",
   "main": "index.js",
   "scripts": {
-    "test": "node index.js"
+    "test": "node index.js",
+    "start": "node index.js",
+    "heroku-postbuild": "npm install --only=dev && npm install && npm run build",
+    "dev": "nodemon index.js"
   },
   "author": "Eshan Chathuranga",
   "license": "MIT",
@@ -14,6 +17,7 @@
     "crypto": "^1.0.1",
     "dotenv": "^16.4.5",
     "express": "^4.21.0",
-    "mongodb": "^6.9.0"
+    "mongodb": "^6.9.0",
+    "path": "^0.12.7"
   }
 }
